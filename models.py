@@ -161,9 +161,12 @@ class User(db.Model):
         """
 
         user = cls.query.filter_by(username=username).first()
-
+        print('Authenticate')
+        print(username)
+        print(user)
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
+            print(is_auth)
             if is_auth:
                 return user
 

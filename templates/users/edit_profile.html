@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Edit Profile</h1>
+    <form id="add_pet_form" method=post>
+
+        {% for field in form if field.widget.input_type != 'hidden' %}
+        {% if field.label.field_id == 'available' %}
+        <fieldset class="form-group">
+            <div class="row">
+                <legend class="col-form-label col-sm-2 pt-0">{{field.label}}</legend>
+                <div class="col-sm-10">
+                    {% for subfield in field %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="{{subfield.name}}" id="{{subfield.name}}"
+                            value={{subfield.data}}>
+                        <label class="form-check-label" for="{{subfield.name}}">
+                            {{subfield.label}}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </fieldset>
+        {% else %}
+        <div class="form-group row my-1">
+            <label for="{{field.for}}" class="col-sm-2 col-form-label">
+                {{field.label}}
+
+            </label>
+            <div class="col-sm-10">
+                {{field}}
+            </div>
+            {% for err in field.errors %}
+            <small class="text-danger">
+                {{err}}
+            </small>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endfor %}
+        <div class="form-group d-flex row-flex">
+            <div class="col-sm-10">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            <div class="col-sm-10">
+                <a href="/">
+                    <button type="button" class="btn btn-primary">Cancel</button>
+                </a>
+            </div>
+        </div>
+
+        {{form.hidden_tag()}}
+    </form>
+</div>
+{% endblock  %}
