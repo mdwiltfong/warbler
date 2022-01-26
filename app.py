@@ -314,8 +314,11 @@ def homepage():
     """
 
     if g.user:
+        following_ids = [f.id for f in g.user.following] + [g.user.id]
+
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
@@ -325,13 +328,6 @@ def homepage():
     else:
         return render_template('home-anon.html')
 
-
-##############################################################################
-# Turn off all caching in Flask
-#   (useful for dev; in production, this kind of stuff is typically
-#   handled elsewhere)
-#
-# https://stackoverflow.com/questions/34066804/disabling-caching-in-flask
 
 @app.after_request
 def add_header(req):
