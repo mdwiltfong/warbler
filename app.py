@@ -1,11 +1,11 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, request, flash, redirect, session, g,abort
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, EditProfileForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 
@@ -137,6 +137,29 @@ def list_users():
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
     return render_template('users/index.html', users=users)
+
+@app.route('/users/add_like/<int:msg_id>',methods=["POST"])
+def add_like(msg_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    liked_message=Message.query.get_or_404(msg_id)
+    if liked_message.user_id == g.user.id:
+        return abort(403)
+
+
+    user_likes = g.user.likes
+
+    if liked_message in user_likes:
+        g.user.likes = [like for like in user_likes if like != liked_message]
+    else:
+        g.user.likes.append(liked_message)
+
+    db.session.commit()
+
+    return redirect("/")
+
 
 
 @app.route('/users/<int:user_id>')
@@ -322,8 +345,8 @@ def homepage():
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-
-        return render_template('home.html', messages=messages)
+        liked_msg_ids = [msg.id for msg in g.user.likes]
+        return render_template('home.html', messages=messages,likes=liked_msg_ids)
 
     else:
         return render_template('home-anon.html')
